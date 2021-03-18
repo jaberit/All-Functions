@@ -1,0 +1,14 @@
+If it is Friday, the function returns TRUE.
+Otherwise, it returns FALSE.
+==========================================================
+CREATE OR REPLACE FUNCTION TGIF_TEST
+RETURN BOOLEAN AS
+BEGIN
+  IF TO_CHAR(SYSDATE,'DAY') = 'FRIDAY' THEN
+      RETURN TRUE;
+  ELSE
+      RETURN FALSE;
+  END IF;
+END;
+========================================================
+If needed, you can declare a variable within the function that has a Boolean datatype.

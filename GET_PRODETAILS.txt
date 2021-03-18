@@ -1,0 +1,26 @@
+Source এর ভিতরে লিখতে হবে এবং রিটার্ন ভেলু সিলেক্ট করতে হবে====
+
+select GET_PRODETAILS(:P90_DETELS22) from dual
+=============================================================
+
+
+create or replace FUNCTION  "GET_PRODETAILS" (PROID INTEGER) RETURN VARCHAR2 IS
+tmpVar VARCHAR2(4000);
+BEGIN
+   tmpVar := '';
+  select  'Code:-' || PRODUCT_CODE  || ',' ||   ' Product Name:-' || PRODUCT_NAME into tmpVar
+  from PRODUCT
+ where   PRODUCT_ID = PROID and rownum <=1;
+ 
+ 
+   RETURN tmpVar;
+  
+END;
+============= 02 ===============
+create or replace FUNCTION  "GET_PRODETAILS" (PROID INTEGER) RETURN INTEGER IS
+tmpVar INTEGER ;
+BEGIN
+  tmpVar := NULL;
+  select 'Code:-' || PRODUCT_CODE  || ',' ||   ' Product Name:-' || PRODUCT_NAME into tmpVar from PRODUCT where PRODUCT_ID = PROID;
+  return tmpVar;
+end ;

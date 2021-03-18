@@ -1,0 +1,85 @@
+create or replace FUNCTION user_login
+(p_username IN VARCHAR2, p_password IN VARCHAR2)
+RETURN BOOLEAN
+AS
+hasil NUMBER := 0;
+BEGIN
+SELECT 1 INTO hasil FROM MY_USERS
+WHERE UPPER(username) = UPPER(p_username)
+AND password = p_password
+AND IS_ACTIVE = 1;
+insert into USERS_log ( LOG_ID,LOGIN_USER,IP_ADDRESS) values (USERS_LOG_SEQ.nextval,p_username,owa_util.get_cgi_env('REMOTE_ADDR'));
+RETURN TRUE;
+EXCEPTION WHEN NO_DATA_FOUND THEN
+RETURN FALSE;
+END user_login;
+---------------------------------------------------------------
+=================================================================
+create or replace PACKAGE BODY  "ACL" 
+AS
+FUNCTION CUSTOM_AUTH (P_USERNAME VARCHAR2, P_PASSWORD VARCHAR2) 
+      RETURN BOOLEAN 
+   IS 
+      L_PASSWORD          VARCHAR2 (4000); 
+      L_STORED_PASSWORD   VARCHAR2 (4000); 
+   BEGIN 
+      -- return true; 
+      -- insert into all_debug(info) values(P_USERNAME||'--'||P_PASSWORD); 
+    --  insert into test5 values( P_USERNAME || ' pass- ' || P_PASSWORD); 
+     -- commit; 
+      -- First, check to see if the user is in the user table 
+ 
+       SELECT PIN 
+        INTO L_STORED_PASSWORD 
+        FROM MY_USERS 
+       WHERE IS_ACTIVE = '1' and LOWER (USERNAME) = LOWER (P_USERNAME) and rownum<=1; 
+      L_PASSWORD := CUSTOM_HASH (P_USERNAME, P_PASSWORD); 
+      -- Finally, we compare them to see if they are the same and return 
+      -- either TRUE or FALSE 
+      -- RETURN TRUE; 
+      IF L_PASSWORD = L_STORED_PASSWORD 
+      THEN 
+          
+            insert into USERS_log (LOG_ID,msg) values((select nvl(max(LOG_ID),0)+1 from USERS_log),'match - user: '|| P_USERNAME || '   pass: ' || P_PASSWORD); 
+ 
+   RETURN TRUE; 
+      ELSE 
+          insert into USERS_log(LOG_ID, msg) values((select nvl(max(LOG_ID),0)+1 from USERS_log),'not match - user: '|| P_USERNAME || '   pass: ' || P_PASSWORD); 
+         RETURN FALSE; 
+      END IF; 
+ 
+   EXCEPTION 
+       when NO_DATA_FOUND  
+       
+      THEN 
+       insert into USERS_log(LOG_ID, msg) values((select nvl(max(LOG_ID),0)+1 from USERS_log),'No User Found - user: '|| P_USERNAME || '   pass: ' || P_PASSWORD); 
+         RETURN false; 
+   END; 
+ 
+ 
+FUNCTION CUSTOM_HASH (P_USERNAME VARCHAR2, P_PASSWORD VARCHAR2) 
+   RETURN VARCHAR2 
+IS 
+   L_PASSWORD   VARCHAR2 (4000); 
+   L_SALT       VARCHAR2 (4000) := 'D9GE4CORSJZVKADPOJ5C1PERC704WB'; 
+BEGIN 
+   -- This function should be wrapped, as the hash algorhythm is exposed here. 
+   -- You can change the value of l_salt or the method of which to call the 
+   -- DBMS_OBFUSCATOIN toolkit, but you much reset all of your passwords 
+   -- if you choose to do this. 
+   /*  L_PASSWORD := 
+       UTL_RAW.CAST_TO_RAW(DBMS_OBFUSCATION_TOOLKIT.MD5 ( 
+                               INPUT_STRING =>   P_PASSWORD || SUBSTR (L_SALT, 10, 13)|| P_USERNAME || SUBSTR (L_SALT, 4, 10))); 
+  */  
+       
+      L_PASSWORD := 
+      UTL_RAW.CAST_TO_RAW ( 
+         DBMS_OBFUSCATION_TOOLKIT.MD5 (INPUT_STRING => P_PASSWORD)); 
+    
+       RETURN L_PASSWORD; 
+ 
+ 
+    --return P_PASSWORD; 
+end;
+
+END;

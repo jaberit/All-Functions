@@ -1,0 +1,16 @@
+create or replace FUNCTION  "GET_IN_QTY" (IN_QTY INTEGER) RETURN number IS
+tmpVar number;
+BEGIN
+   tmpVar := '';
+   select (select sum(a.QTY) from PURCHASE_DETALIS a 
+           where a.ITEM_NAME=b.ITEM_NAME 
+           and a.PRODUCT_ID = b.PRODUCT_ID 
+           and a.PROOUCT_SIZE = b.PROOUCT_SIZE
+           and a.SUBMIT = 1) into tmpVar
+  from SALES_DTLS b, PURCHASE_DETALIS a
+ where a.PRODUCT_ID = IN_QTY 
+ and a.SUBMIT = 1 and rownum <=1;
+
+   RETURN tmpVar;
+  
+END;

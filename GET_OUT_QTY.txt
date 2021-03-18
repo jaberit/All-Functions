@@ -1,0 +1,14 @@
+create or replace FUNCTION  "GET_OUT_QTY" (OUT_QTY INTEGER) RETURN number IS
+tmpVar number;
+BEGIN
+   tmpVar := '';
+   select (select sum(b.QTY) from SALES_DTLS b where a.ITEM_NAME=b.ITEM_NAME and a.PROOUCT_SIZE = b.PROOUCT_SIZE and b.SUBMIT = 1) into tmpVar
+  from SALES_DTLS a, PURCHASE_DETALIS b
+ where a.PRODUCT_ID = OUT_QTY 
+ and a.SUBMIT = 1 and rownum <=1;
+ 
+   RETURN tmpVar;
+  
+END;
+
+--(select sum(b.QTY) from SALES_DTLS b where a.ITEM_NAME=b.ITEM_NAME and a.PROOUCT_SIZE = b.PROOUCT_SIZE and b.SUBMIT = 1) Out_Qty,
